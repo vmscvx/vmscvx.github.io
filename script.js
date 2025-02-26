@@ -58,9 +58,12 @@ async function getSignature() {
     // Делает блок предпросмотра видимым
     previewContainer.style.display = 'block';
 
-    // Выделение содержимого textarea и копирование в буфер обмена
-    signatureEl.select();
-    document.execCommand('copy');
+    // Копирование подписи в буфер обмена
+    try {
+        await navigator.clipboard.writeText(signature);
+    } catch (err) {
+        console.error('Ошибка при копировании в буфер обмена:', err);
+    }
 }
 
 // Функция возвращает исходное значение, если оно не пустое, или шаблон по умолчанию
