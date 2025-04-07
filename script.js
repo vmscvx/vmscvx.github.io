@@ -22,7 +22,6 @@ async function getSignature() {
     const roleEl = document.getElementById('role');
     const addressEl = document.getElementById('address');
     const mailEl = document.getElementById('mail');
-    const extensionEl = document.getElementById('extension');
     const phone1El = document.getElementById('phone1');
     const phone2El = document.getElementById('phone2');
     const signatureEl = document.getElementById('signature');
@@ -36,8 +35,6 @@ async function getSignature() {
     const addressValue = addressEl.value;
     const address = addressValue ? `<p style="margin:5px 0">${addressValue}</p>` : '';
     const mail = getStringOrTemplate(mailEl.value, 'sale@volt-market.com');
-    const extensionValue = extensionEl.value;
-    const extension = extensionValue ? `, доб. ${extensionValue}` : '';
 
     // Форматируем номера телефонов
     const phone1 = getFormattedPhoneString(phone1El.value);
@@ -45,7 +42,7 @@ async function getSignature() {
     const phones = phone1 + phone2;
 
     // Формируем основной HTML для подписи
-    const cred = `<div style="font-family:Calibri,sans-serif"><div style="border-left:3px solid #fd9c12;padding-left:10px"><p style="font-weight:700;margin:0">С уважением,</p><p style="font-weight:700;margin:0">${fullname}</p>${role}${address}<p style="margin:5px 0">Компания "Вольтмаркет"</p><p style="margin:5px 0">Телефон: <a href="tel:88005501161" style="color:#fd9c12;text-decoration:none">8 (800) 550-11-61</a>${extension}</p>${phones}<p style="margin:5px 0">E-mail: <a href="mailto:${mail}" style="color:#fd9c12;text-decoration:none">${mail}</a></p></div></div>`;
+    const cred = `<div style="font-family:Calibri,sans-serif"><div style="border-left:3px solid #fd9c12;padding-left:10px"><p style="font-weight:700;margin:0">С уважением,</p><p style="font-weight:700;margin:0">${fullname}</p>${role}${address}<p style="margin:5px 0">Компания "Вольтмаркет"</p><p style="margin:5px 0">Телефон: <a href="tel:88005501161" style="color:#fd9c12;text-decoration:none">8 (800) 550-11-61</a></p>${phones}<p style="margin:5px 0">E-mail: <a href="mailto:${mail}" style="color:#fd9c12;text-decoration:none">${mail}</a></p></div></div>`;
 
     // Объединяем основную часть и banner
     const signature = cred + banner;
