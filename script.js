@@ -13,7 +13,7 @@ async function loadBanner(url = 'banner.txt') {
 }
 
 // Основная функция для формирования подписи
-async function getSignature() {
+async function getSignature(copy) {
     // Загружаем banner.txt
     const banner = await loadBanner();
 
@@ -66,10 +66,12 @@ async function getSignature() {
     previewIframe.style.display = 'block';
 
     // Копирование подписи в буфер обмена
-    try {
-        await navigator.clipboard.writeText(signature);
-    } catch (err) {
-        console.error('Ошибка при копировании в буфер обмена:', err);
+    if (copy) {
+        try {
+            await navigator.clipboard.writeText(signature);
+        } catch (err) {
+            console.error('Ошибка при копировании в буфер обмена:', err);
+        }
     }
 }
 
