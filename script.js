@@ -27,7 +27,7 @@ async function getSignature() {
     const phone2El = document.getElementById('phone2');
     const signatureEl = document.getElementById('signature');
     const iframe = document.getElementById('signaturePreview');
-    const previewContainer = document.querySelector('.preview-container');
+    const previewIframe = document.querySelector('.preview-iframe');
 
     // Получаем значения, подставляя значение по умолчанию, если поле пустое
     const fullname = getStringOrTemplate(nameEl.value, 'ФИО');
@@ -53,14 +53,17 @@ async function getSignature() {
     // Выводим подпись в textarea
     signatureEl.value = signature;
 
+    // Получаем рыба-текст
+    const fishText = await getText();
+
     // Записываем HTML-подпись в iframe для предпросмотра
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
-    iframeDoc.write(`<!DOCTYPE html>${signature}`);
+    iframeDoc.write(`<!DOCTYPE html>${fishText}<p>--</p>${signature}`);
     iframeDoc.close();
 
     // Делает блок предпросмотра видимым
-    previewContainer.style.display = 'block';
+    previewIframe.style.display = 'block';
 
     // Копирование подписи в буфер обмена
     try {
@@ -84,3 +87,30 @@ function getFormattedPhoneString(phoneNumber) {
     }
     return '';
 }
+
+// Функция для получения рыба-текста
+async function getText() {
+    const url = "https://fish-text.ru/get";
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.status === 'success') {
+            return data.text; // Возвращаем текст
+        } else {
+            throw new Error("Ошибка: статус не 'success'");
+        }
+    } catch (error) {
+        console.error("Ошибка при запросе:", error);
+        return null; // Возвращаем null в случае ошибки
+    }
+}
+
+// Инициализация подписи при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    getSignature(); // Вызываем функцию для генерации подписи
+});
