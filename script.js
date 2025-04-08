@@ -59,7 +59,7 @@ async function getSignature(copy) {
     // Записываем HTML-подпись в iframe для предпросмотра
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
-    iframeDoc.write(`<!DOCTYPE html>${fishText}<p>--</p>${signature}`);
+    iframeDoc.write(`<!DOCTYPE html><p>${fishText}<br></p>-- <br>${signature}`);
     iframeDoc.close();
 
     // Делает блок предпросмотра видимым
