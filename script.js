@@ -90,7 +90,7 @@ function getFormattedPhoneString(phoneNumber) {
     return '';
 }
 
-// Функция для получения рыба-текста
+// Асинхронная функция для получения рыба-текста
 async function getText() {
     const url = "https://fish-text.ru/get";
 
