@@ -53,13 +53,10 @@ async function getSignature(copy) {
     // Выводим подпись в textarea
     signatureEl.value = signature;
 
-    // Получаем рыба-текст
-    const fishText = await getText();
-
     // Записываем HTML-подпись в iframe для предпросмотра
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
-    iframeDoc.write(`<!DOCTYPE html><p>${fishText}<br></p>-- <br>${signature}`);
+    iframeDoc.write(`<!DOCTYPE html>${signature}`);
     iframeDoc.close();
 
     // Делает блок предпросмотра видимым
@@ -88,28 +85,6 @@ function getFormattedPhoneString(phoneNumber) {
         return `<p style="margin:5px 0">Мобильный (WhatsApp/Viber): <a href="tel:+${cleaned}" style="color:#fd9c12;text-decoration:none">${formatted}</a></p>`;
     }
     return '';
-}
-
-// Асинхронная функция для получения рыба-текста
-async function getText() {
-    const url = "https://fish-text.ru/get";
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.status === 'success') {
-            return data.text; // Возвращаем текст
-        } else {
-            throw new Error("Ошибка: статус не 'success'");
-        }
-    } catch (error) {
-        console.error("Ошибка при запросе:", error);
-        return null; // Возвращаем null в случае ошибки
-    }
 }
 
 // Инициализация подписи при загрузке страницы
