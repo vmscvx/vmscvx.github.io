@@ -1,173 +1,45 @@
-const baseURL = "https://api.proxyapi.ru/openai/v1";
-
+// Проверка и запрос API-ключа
 let API_KEY = localStorage.getItem('apiKey');
-const MODEL = () => document.getElementById('model-selector').value;
+
+if (!API_KEY) {
+    API_KEY = prompt('Введите ваш API-ключ:', '');
+    if (API_KEY) {
+        localStorage.setItem('apiKey', API_KEY);
+    } else {
+        alert('API-ключ необходим для работы приложения.');
+    }
+}
+
+const baseURL = "https://api.proxyapi.ru/openai/v1";
 
 const messagesContainer = document.getElementById('messages');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
-const dialoguesListEl = document.getElementById('dialogues-list');
-const newDialogBtn = document.getElementById('new-dialogue');
-const saveDialogBtn = document.getElementById('save-dialog');
 const balanceElement = document.getElementById('balance');
-const currentModelDisplay = document.getElementById('current-model');
-const modelSelect = document.getElementById('model-creator');
 
-const apiModal = document.getElementById('apiModal');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const saveApiBtn = document.getElementById('saveApiKey');
+let conversationHistory = [];
 
-let conversations = {}; // {dialogName: {title, model, messages[]}}
-let currentDialog = null;
-
-// -------------- Обработка API ключа ----------------
-if (!API_KEY) {
-    document.getElementById('apiModal').style.display = 'flex';
-}
-document.getElementById('saveApiKey').onclick = () => {
-    const key = apiKeyInput.value.trim();
-    if (!key) { alert('Введите ключ'); return; }
-    API_KEY = key;
-    localStorage.setItem('apiKey', key);
-    document.getElementById('apiModal').style.display = 'none';
-    init();
-};
-apiKeyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-        e.preventDefault(); document.getElementById('saveApiKey').click();
-    }
-});
-
-// -------------- Инициализация ----------------
-function init() {
-    loadData();
-    if (Object.keys(conversations).length === 0) {
-        const name = 'Диалог 1';
-        conversations[name] = { title: name, model: '', messages: [] };
-    }
-    if (!currentDialog || !conversations[currentDialog]) currentDialog = Object.keys(conversations)[0];
-    // Обновляем отображение модели для текущего диалога
-    if (conversations[currentDialog].model) {
-        currentModelDisplay.innerText = 'Модель: ' + conversations[currentDialog].model;
-    } else {
-        currentModelDisplay.innerText = 'Модель: gpt-4.1-nano';
-    }
-    renderDialogs();
-    loadConversation(currentDialog);
-    fetchBalance();
-    // установка текущей модели
-    modelSelect.value = conversations[currentDialog].model || 'gpt-4.1-nano';
+// Функция для экранирования HTML
+function escapeHTML(str) {
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
-// ----------- Загрузка и сохранение данных -------------
-function loadData() {
-    const d = localStorage.getItem('dialogsData');
-    if (d) {
-        try { conversations = JSON.parse(d); }
-        catch (e) { conversations = {}; }
-    }
-}
-function saveData() {
-    localStorage.setItem('dialogsData', JSON.stringify(conversations));
-}
-
-// ----------- Рендер диалогов -------------
-function renderDialogs() {
-    dialoguesListEl.innerHTML = '';
-    Object.keys(conversations).forEach(name => {
-        const dlg = conversations[name];
-        const div = document.createElement('div');
-        div.className = 'dialogue' + (name === currentDialog ? ' dialogue-active' : '');
-        // редактируемое название
-        const input = document.createElement('input');
-        input.type = 'text'; input.value = dlg.title;
-        input.onchange = () => {
-            dlg.title = input.value;
-            saveData();
-            renderDialogs();
-        };
-        input.onclick = () => { currentDialog = name; loadConversation(name); };
-        // Клик по диалогу
-        div.onclick = () => {
-            currentDialog = name;
-            loadConversation(name);
-            renderDialogs();
-        };
-        // Удалить
-        const delBtn = document.createElement('button');
-        delBtn.innerText = '🗑️'; delBtn.title = 'Удалить';
-        delBtn.onclick = (e) => {
-            e.stopPropagation();
-            delete conversations[name];
-            if (currentDialog === name) currentDialog = null;
-            saveData();
-            renderDialogs();
-        };
-        // Скачать
-        const saveBtn = document.createElement('button');
-        saveBtn.innerText = '⬇️'; saveBtn.title = 'Скачать';
-        saveBtn.onclick = (e) => {
-            e.stopPropagation();
-            downloadDialog(name);
-        };
-        div.appendChild(input);
-        div.appendChild(delBtn);
-        div.appendChild(saveBtn);
-        dialoguesListEl.appendChild(div);
-    });
-}
-
-// Создать новый диалог
-document.getElementById('new-dialogue').onclick = () => {
-    let name = prompt('Название диалога');
-    if (!name || name.trim() === '') name = 'Диалог ' + (Object.keys(conversations).length + 1);
-    if (conversations[name]) {
-        alert('Такой диалог уже есть!');
-        return;
-    }
-    // при создании задаем выбранную модель
-    const selectedModel = modelSelect.value;
-    conversations[name] = { title: name, model: selectedModel, messages: [] };
-    currentDialog = name;
-    saveData();
-    renderDialogs();
-    loadConversation(name);
-};
-
-// Загрузить диалог
-function loadConversation(name) {
-    if (!conversations[name]) return;
-    messagesContainer.innerHTML = '';
-    conversations[name].messages.forEach(m => addMessage(m.content, m.role));
-    // Обновляем описание модели и текущее отображение
-    const mdl = conversations[name].model || '';
-    currentModelDisplay.innerText = 'Модель: ' + (mdl || 'gpt-4.1-nano');
-    // В селекторе выбора модели - обновим значение (если есть)
-    if (mdl) {
-        modelSelect.value = mdl;
-    } else {
-        modelSelect.value = 'gpt-4.1-nano';
-    }
-}
-
-// Выбор модели при создании
-modelSelect.onchange = () => {
-    if (currentDialog && conversations[currentDialog]) {
-        conversations[currentDialog].model = modelSelect.value;
-        currentModelDisplay.innerText = 'Модель: ' + conversations[currentDialog].model;
-        saveData();
-    }
-}
-
-// Добавление сообщения
+// Обработка Markdown, добавление кнопки копирования
 function renderMarkdown(md) {
     const html = marked.parse(md);
+    // Вставка обработчиков для кнопок копирования после рендера
     setTimeout(() => {
         document.querySelectorAll('.code-block').forEach(block => {
             const btn = block.querySelector('.copy-btn');
             if (btn) {
                 btn.onclick = () => {
-                    navigator.clipboard.writeText(block.querySelector('code').innerText).catch(() => alert('Копия не поддерживается'));
+                    navigator.clipboard.writeText(block.querySelector('code').innerText).catch(() => {
+                        alert('Копирование не поддерживается в вашем браузере');
+                    });
                 };
             }
         });
@@ -175,141 +47,140 @@ function renderMarkdown(md) {
     return html;
 }
 
-function addMessage(content, role) {
-    const div = document.createElement('div');
-    div.className = 'message ' + role;
-    div.innerHTML = renderMarkdown(content);
-    // Обработка блоков кода
-    div.querySelectorAll('pre code').forEach(code => {
-        const parentPre = code.parentElement;
+// Функция добавления сообщения
+function addMessage(content, sender, isUserHtml = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message ' + sender;
+
+    if (sender === 'user' && isUserHtml) {
+        const escapedContent = escapeHTML(content);
+        msgDiv.innerHTML = `<pre><code>${escapedContent}</code></pre>`;
+    } else {
+        msgDiv.innerHTML = renderMarkdown(content);
+    }
+
+    // Обработка блоков кода внутри сообщения
+    msgDiv.querySelectorAll('pre code').forEach(codeElem => {
+        const parentPre = codeElem.parentElement;
         const container = document.createElement('div');
         container.className = 'code-container';
 
-        // язык
-        const classList = code.className.split(' ');
+        // Определение языка
+        const classList = codeElem.className.split(' ');
         let lang = 'код';
         classList.forEach(c => {
-            if (c.startsWith('language-')) lang = c.replace('language-', '');
+            if (c.startsWith('language-')) {
+                lang = c.replace('language-', '');
+            }
         });
+
+        // Создаем метку языка
         const langLabel = document.createElement('div');
         langLabel.className = 'lang-label';
         langLabel.innerText = lang;
+        container.appendChild(langLabel);
 
+        // Создаем кнопку копирования
         const copyBtn = document.createElement('button');
         copyBtn.className = 'copy-btn';
         copyBtn.innerText = 'Копировать';
-
-        container.appendChild(langLabel);
         container.appendChild(copyBtn);
-        container.appendChild(code.parentElement.cloneNode(true));
+
+        // Назначаем обработчик копирования
+        copyBtn.onclick = () => {
+            const codeBlock = container.querySelector('pre code') || container.querySelector('code');
+            if (codeBlock) {
+                navigator.clipboard.writeText(codeBlock.innerText).catch(() => {
+                    alert('Копирование не поддерживается в вашем браузере');
+                });
+            } else {
+                alert('Код для копирования не найден');
+            }
+        };
+
+        // Вставляем склонированный блок кода (оборачиваем в контейнер)
+        const codeClone = codeElem.parentElement.cloneNode(true);
+        container.appendChild(codeClone);
+
+        // Заменяем старый <pre><code> на новый контейнер
         parentPre.replaceWith(container);
     });
-    messagesContainer.appendChild(div);
+
+    messagesContainer.appendChild(msgDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // Отправка сообщения
 async function sendMessage(text) {
-    if (!conversations[currentDialog]) return;
-    const msg = { role: 'user', content: text };
-    // Перед отправкой обновляем модель из селектора
-    conversations[currentDialog].model = modelSelect.value;
-    conversations[currentDialog].messages.push(msg);
-    addMessage(text, 'user');
+    const userMsg = { role: "user", content: text };
+    conversationHistory.push(userMsg);
+    addMessage(text, 'user', true); // показать как текст
 
     try {
-        const response = await fetch(baseURL + '/chat/completions', {
-            method: 'POST',
+        const response = await fetch(baseURL + "/chat/completions", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + API_KEY
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + API_KEY
             },
-            body: JSON.stringify({ model: conversations[currentDialog].model, messages: conversations[currentDialog].messages })
+            body: JSON.stringify({
+                model: "gpt-4.1-nano",
+                messages: conversationHistory
+            })
         });
-        if (!response.ok) throw new Error('Ошибка сети ' + response.status);
+        if (!response.ok) throw new Error("Ошибка сети: " + response.status);
         const data = await response.json();
-        const reply = data?.choices?.[0]?.message?.content;
-        if (reply) {
-            conversations[currentDialog].messages.push({ role: 'assistant', content: reply });
-            addMessage(reply, 'bot');
-        } else {
-            addMessage('Ошибка: не получен ответ от API', 'bot');
-        }
-    } catch (e) {
-        console.error(e);
-        addMessage('Произошла ошибка: ' + e.message, 'bot');
-    }
+        const botMsg = data?.choices?.[0]?.message?.content;
 
-    saveCurrent();
-    saveData();
+        if (botMsg) {
+            const botMessage = { role: "assistant", content: botMsg };
+            conversationHistory.push(botMessage);
+            addMessage(botMsg, 'bot');
+        } else {
+            addMessage("Ошибка: не получен ответ от API", 'bot');
+        }
+    } catch (err) {
+        console.error('Ошибка:', err);
+        addMessage("Произошла ошибка: " + err.message, 'bot');
+    }
 }
 
-// Обработчики
-document.getElementById('send-btn').onclick = () => {
-    const txt = userInput.value.trim();
-    if (txt !== '') {
-        sendMessage(txt);
+// Обработка нажатий на кнопку отправки
+sendBtn.onclick = () => {
+    const text = userInput.value.trim();
+    if (text) {
+        sendMessage(text);
         userInput.value = '';
     }
 };
+
+// Обработка Enter (с Ctrl или Cmd для новой строки)
 userInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
-            document.getElementById('send-btn').click();
-        } // перенос строки
+            sendBtn.click();
+        }
     }
 });
 
-// Баланс
+// Получение баланса
 async function fetchBalance() {
     try {
-        const resp = await fetch('https://api.proxyapi.ru/proxyapi/balance', {
+        const response = await fetch('https://api.proxyapi.ru/proxyapi/balance', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + API_KEY
             }
         });
-        if (!resp.ok) throw new Error('Ошибка сети ' + resp.status);
-        const data = await resp.json();
-        balanceElement.innerText = 'Баланс: ' + (data.balance.toFixed(2)) + ' руб.';
-    } catch (e) { console.error(e); }
-}
-
-// Инициализация
-loadData();
-if (Object.keys(conversations).length === 0) {
-    const name = 'Диалог 1';
-    conversations[name] = { title: name, model: '', messages: [] };
-}
-if (!currentDialog || !conversations[currentDialog]) currentDialog = Object.keys(conversations)[0];
-
-renderDialogs();
-loadConversation(currentDialog);
-fetchBalance();
-
-// Создать диалог
-document.getElementById('new-dialogue').onclick = () => {
-    let name = prompt('Название диалога');
-    if (!name || name.trim() === '') name = 'Диалог ' + (Object.keys(conversations).length + 1);
-    if (conversations[name]) {
-        alert('Такой диалог уже есть!');
-        return;
+        if (!response.ok) throw new Error('Сетевая ошибка: ' + response.status);
+        const data = await response.json();
+        balanceElement.textContent = `Баланс: ${data.balance.toFixed(2)} руб.`;
+    } catch (error) {
+        console.error('Ошибка при получении баланса:', error);
     }
-    conversations[name] = { title: name, model: '', messages: [] };
-    currentDialog = name;
-    saveData();
-    renderDialogs();
-    loadConversation(name);
-};
+}
 
-// Скачать текущий
-document.getElementById('save-dialog').onclick = () => {
-    downloadDialog(currentDialog);
-};
-
-window.onbeforeunload = () => {
-    saveCurrent();
-    saveData();
-};
+fetchBalance();
+setInterval(fetchBalance, 60000);
