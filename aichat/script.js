@@ -50,13 +50,13 @@ function init() {
     if (conversations[currentDialog].model) {
         currentModelDisplay.innerText = 'Модель: ' + conversations[currentDialog].model;
     } else {
-        currentModelDisplay.innerText = 'Модель: —';
+        currentModelDisplay.innerText = 'Модель: gpt-4.1-nano';
     }
     renderDialogs();
     loadConversation(currentDialog);
     fetchBalance();
     // установка текущей модели
-    modelSelect.value = conversations[currentDialog].model || '';
+    modelSelect.value = conversations[currentDialog].model || 'gpt-4.1-nano';
 }
 
 // ----------- Загрузка и сохранение данных -------------
@@ -141,12 +141,12 @@ function loadConversation(name) {
     conversations[name].messages.forEach(m => addMessage(m.content, m.role));
     // Обновляем описание модели и текущее отображение
     const mdl = conversations[name].model || '';
-    currentModelDisplay.innerText = 'Модель: ' + (mdl || '—');
+    currentModelDisplay.innerText = 'Модель: ' + (mdl || 'gpt-4.1-nano');
     // В селекторе выбора модели - обновим значение (если есть)
     if (mdl) {
         modelSelect.value = mdl;
     } else {
-        modelSelect.value = '';
+        modelSelect.value = 'gpt-4.1-nano';
     }
 }
 
