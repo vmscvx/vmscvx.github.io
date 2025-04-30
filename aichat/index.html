@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="none" />
+  <title>OpenAI Чат через ProxyAPI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="/manifest.webmanifest">
+</head>
+
+<body>
+
+  <!-- Модальное окно для API-ключа -->
+  <div id="apiModal">
+    <div id="apiModalContent">
+      <h3>Введите API-ключ ProxyAPI</h3>
+      <input type="text" id="apiKeyInput" placeholder="Ваш API-ключ" />
+      <button id="saveApiKey">Сохранить</button>
+    </div>
+  </div>
+
+  <div id="status">
+    <div id="balance">Баланс: 0.00 руб.</div>
+    <div id="current-model">Модель: —</div>
+  </div>
+
+  <div id="wrapper">
+    <!-- Панель диалогов слева -->
+    <div id="dialogues">
+      <div id="dialogues-header" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between;">
+          <button id="new-dialogue">Создать диалог</button>
+          <button id="save-dialog">⬇️</button>
+        </div>
+        <select id="model-creator" style="margin-top:10px;">
+          <option value="" disabled selected>Выберите модель для нового диалога</option>
+          <option value="gpt-4.1">gpt-4.1</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+        </select>
+      </div>
+      <div id="dialogues-list" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Основной чат -->
+    <div id="chat-container">
+      <div id="messages"></div>
+      <div id="input-container">
+        <textarea id="user-input" placeholder="Введите сообщение..."></textarea>
+        <button id="send-btn">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
