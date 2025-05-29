@@ -130,6 +130,7 @@
     function updateBalanceOnPage(balanceNumber) {
         displayBalance(balanceNumber);
         checkBalanceAndNotify(balanceNumber);
+        document.title = `Баланс ProxyAPI: ${formatBalance(balanceNumber)}`;
     }
 
     async function updateIfNeeded() {
