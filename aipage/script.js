@@ -24,9 +24,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         const contentData = await contentResponse.json();
         if (contentData.choices && contentData.choices.length > 0) {
 
-            const rawContent = contentData.choices[0].message.content.trim();
+            let rawContent = contentData.choices[0].message.content.trim();
             const cutIndex = rawContent.indexOf('---\n\n**Sponsor**');
-            const generatedContent = cutIndex !== -1 ? rawContent.substring(0, cutIndex).trim() : rawContent;
+            if (cutIndex !== -1) {
+                rawContent = rawContent.substring(0, cutIndex).trim();
+            }
+            if (rawContent.startsWith('```html')) {
+                rawContent = rawContent.substring('```html'.length).trim();
+            }
+            if (rawContent.endsWith('```')) {
+                rawContent = rawContent.substring(0, rawContent.length - '```'.length).trim();
+            }
 
             const iframeContainer = document.getElementById('iframe-container');
             const iframe = document.getElementById('output-frame');
