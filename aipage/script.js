@@ -22,19 +22,12 @@
         setTitle("Загрузка контента...");
         const res = await fetch(endpoint, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "openai-fast",
-                messages: [{ role: "user", content: contentPrompt }]
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "openai-fast", messages: [{ role: "user", content: contentPrompt }] })
         });
         const data = await res.json();
-
         if (!data.choices?.length) throw new Error("Пустой ответ");
 
-        setTitle("Обработка содержимого...");
         let rawContent = data.choices[0].message.content.trim();
 
         let sponsorLink = null;
@@ -49,16 +42,6 @@
         if (rawContent.startsWith("```html")) rawContent = rawContent.slice(7).trim();
         if (rawContent.endsWith("```")) rawContent = rawContent.slice(0, -3).trim();
 
-        const iframeContainer = document.getElementById("iframe-container");
-        const iframe = document.getElementById("output-frame");
-        iframe.srcdoc = rawContent;
-        iframeContainer.style.display = "block";
-        requestAnimationFrame(() => iframeContainer.classList.add("visible"));
-        document.getElementById("content").style.display = "none";
-
-        const btn = document.getElementById("download-button");
-        btn.style.display = "flex";
-
         setTitle("Генерация заголовка...");
         const titlePrompt = `
 Придумай полноценный, информативный, но лаконичный заголовок для лендинга, основанного на следующем HTML-коде:
@@ -68,20 +51,31 @@
 
         const titleRes = await fetch(endpoint, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "openai-fast",
-                messages: [{ role: "user", content: titlePrompt }]
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ model: "openai-fast", messages: [{ role: "user", content: titlePrompt }] })
         });
         const titleData = await titleRes.json();
         const pageTitle = titleData.choices?.[0]?.message?.content.trim() || "Сгенерированная страница";
         setTitle(pageTitle);
 
+        let updatedContent = rawContent.replace(/<title>[\s\S]*?<\/title>/i, `<title>${pageTitle}</title>`);
+        if (!/<title>/i.test(rawContent)) {
+            updatedContent = updatedContent.replace(/<head.*?>/i, m => `${m}\n  <title>${pageTitle}</title>`);
+        }
+
+        const iframeContainer = document.getElementById("iframe-container");
+        const iframe = document.getElementById("output-frame");
+        iframe.srcdoc = updatedContent;
+        iframeContainer.style.display = "block";
+        requestAnimationFrame(() => iframeContainer.classList.add("visible"));
+
+        document.getElementById("content").style.display = "none";
+
+        const btn = document.getElementById("download-button");
+        btn.style.display = "flex";
+
         btn.onclick = () => {
-            const blob = new Blob([rawContent], { type: "text/html" });
+            const blob = new Blob([updatedContent], { type: "text/html" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -91,9 +85,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            if (sponsorLink) {
-                window.open(sponsorLink, "_blank", "noopener,noreferrer");
-            }
+            if (sponsorLink) window.open(sponsorLink, "_blank", "noopener,noreferrer");
         };
 
     } catch (e) {
