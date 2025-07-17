@@ -1,7 +1,7 @@
 (async () => {
     const setTitle = t => document.title = t;
     setTitle("Генерация страницы...");
-    const theme = prompt("Укажите тему для лендинга:", "Эверест");
+    const theme = prompt("Укажите тему для страницы:", "Эверест");
     if (!theme) {
         setTitle("Тема не указана");
         document.getElementById("content").innerHTML = "<p>Тема не указана.</p>";
@@ -22,7 +22,7 @@
         const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "openai-fast", messages: [{ role: "user", content: contentPrompt }] })
+            body: JSON.stringify({ model: "openai", messages: [{ role: "user", content: contentPrompt }] })
         });
         const data = await res.json();
         if (!data.choices?.length) throw new Error("Пустой ответ");
@@ -45,13 +45,14 @@
         const titlePrompt = `
 Придумай полноценный, информативный, но лаконичный заголовок для лендинга, основанного на следующем HTML-коде:
 """${rawContent}"""
+Учитывай язык страницы: заголовок должен быть на том же языке. Если имеется несколько языков, выбери преобладающий.
 Дай ответ только в виде заголовка без лишних пояснений или символов.
 `.trim();
 
         const titleRes = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: "openai-fast", messages: [{ role: "user", content: titlePrompt }] })
+            body: JSON.stringify({ model: "openai", messages: [{ role: "user", content: titlePrompt }] })
         });
         const titleData = await titleRes.json();
         const pageTitle = titleData.choices?.[0]?.message?.content.trim() || "Сгенерированная страница";
