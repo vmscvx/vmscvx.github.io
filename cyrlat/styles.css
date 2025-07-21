@@ -1,0 +1,289 @@
+html {
+    font-family: sans-serif;
+    font-size: 10px;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    font-size: 15px;
+    line-height: 1.43;
+    color: #fff;
+    background-color: #f8f8f8;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+textarea {
+    color: #3b3b3b;
+    font: inherit;
+    line-height: inherit;
+    margin: 0;
+    border: 2px hidden transparent;
+    background-color: #fff;
+    outline: none;
+    overflow: auto;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+textarea:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+h2,
+h3 {
+    font-family: sans-serif;
+    font-weight: 400;
+    line-height: 1.1;
+    color: inherit;
+    margin-top: 21px;
+    margin-bottom: 10.5px;
+}
+
+h2 {
+    font-size: 32px;
+}
+
+h3 {
+    font-size: 26px;
+}
+
+p {
+    margin: 0 0 10.5px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.container {
+    margin: 0 auto;
+    padding: 0 15px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 970px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 90%;
+    }
+}
+
+.row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.row:after,
+.container:after,
+.panel-body:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.col-sm-6 {
+    position: relative;
+    min-height: 1px;
+    padding: 0 15px;
+}
+
+@media (min-width: 768px) {
+    .col-sm-6 {
+        float: left;
+        width: 50%;
+    }
+}
+
+.panel {
+    margin-bottom: 21px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.panel-body {
+    padding: 15px;
+}
+
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-radius: 3px 3px 0 0;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 17px;
+    color: inherit;
+}
+
+.panel-info {
+    border-color: #e5e5e5;
+}
+
+.panel-info>.panel-heading {
+    color: #1f1f1f;
+    background: #f8f8f8;
+    border-color: #e5e5e5;
+}
+
+.content {
+    padding: 30px 0;
+    min-height: calc(100vh - 120px);
+}
+
+.content h2 {
+    font-size: 36px;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin-top: 0;
+}
+
+.content p {
+    font: 600 14px sans-serif;
+    line-height: 22px;
+    color: #1f1f1f;
+}
+
+.content .panel {
+    margin-top: 20px;
+    border-radius: 2px;
+}
+
+.content .panel-body {
+    padding: 0;
+}
+
+.content .panel-heading {
+    border-radius: 0;
+}
+
+.content textarea {
+    width: 100%;
+    height: 75vmin;
+    resize: none;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow: auto;
+    padding: 15px;
+    vertical-align: top;
+    background: #fff;
+    color: #3b3b3b;
+}
+
+.output {
+    height: 75vmin;
+    padding: 15px;
+    overflow: auto;
+    white-space: pre;
+    background: #fff;
+    color: #3b3b3b;
+}
+
+.lat,
+.cyr {
+    font-weight: bold;
+}
+
+.lat {
+    color: #005fb8;
+}
+
+.cyr {
+    color: #f85149;
+}
+
+@media print {
+
+    *,
+    *:before,
+    *:after {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+@-ms-viewport {
+    width: device-width;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        background: #181818;
+        color: #d7d7d7;
+    }
+
+    .content h2,
+    .content p {
+        color: #d7d7d7;
+    }
+
+    .panel {
+        background: #1f1f1f;
+    }
+
+    .panel-info {
+        border-color: #2b2b2b;
+    }
+
+    .panel-info>.panel-heading {
+        color: #d7d7d7;
+        background: #181818;
+        border-color: #2b2b2b;
+    }
+
+    .content textarea,
+    .output {
+        background: #1f1f1f;
+        color: #cccccc;
+    }
+
+    .lat {
+        color: #0078d4;
+    }
+
+    .cyr {
+        color: #f85149;
+    }
+}
