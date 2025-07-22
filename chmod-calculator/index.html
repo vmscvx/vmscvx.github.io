@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="none" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chmod Калькулятор</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+</head>
+
+<body>
+
+    <h1>Chmod Калькулятор</h1>
+
+    <label for="modeString">Разрешения (символы):</label>
+    <input type="text" id="modeString" autocomplete="off" spellcheck="false" placeholder="" />
+
+    <label for="modeNumber" style="margin-top:1.4rem;">Разрешения (число):</label>
+    <input type="text" pattern="[0-7]{3,4}" id="modeNumber" maxlength="4" autocomplete="off" spellcheck="false"
+        placeholder="" />
+
+    <label style="margin-top:1.6rem;">Флаги доступа:</label>
+    <div class="flags-group">
+
+        <div class="flags-col" aria-label="Пользователь">
+            <strong>Пользователь</strong>
+            <input type="checkbox" id="user-read" class="flag" data-type="user" data-perm="read" />
+            <label for="user-read" class="flag-label">Чтение (r)</label>
+
+            <input type="checkbox" id="user-write" class="flag" data-type="user" data-perm="write" />
+            <label for="user-write" class="flag-label">Запись (w)</label>
+
+            <input type="checkbox" id="user-execute" class="flag" data-type="user" data-perm="execute" />
+            <label for="user-execute" class="flag-label">Выполнение (x)</label>
+        </div>
+
+        <div class="flags-col" aria-label="Группа">
+            <strong>Группа</strong>
+            <input type="checkbox" id="group-read" class="flag" data-type="group" data-perm="read" />
+            <label for="group-read" class="flag-label">Чтение (r)</label>
+
+            <input type="checkbox" id="group-write" class="flag" data-type="group" data-perm="write" />
+            <label for="group-write" class="flag-label">Запись (w)</label>
+
+            <input type="checkbox" id="group-execute" class="flag" data-type="group" data-perm="execute" />
+            <label for="group-execute" class="flag-label">Выполнение (x)</label>
+        </div>
+
+        <div class="flags-col" aria-label="Остальные">
+            <strong>Остальные</strong>
+            <input type="checkbox" id="others-read" class="flag" data-type="others" data-perm="read" />
+            <label for="others-read" class="flag-label">Чтение (r)</label>
+
+            <input type="checkbox" id="others-write" class="flag" data-type="others" data-perm="write" />
+            <label for="others-write" class="flag-label">Запись (w)</label>
+
+            <input type="checkbox" id="others-execute" class="flag" data-type="others" data-perm="execute" />
+            <label for="others-execute" class="flag-label">Выполнение (x)</label>
+        </div>
+
+    </div>
+
+    <div class="result-label">Результат (символический вид):</div>
+    <div id="resultString" role="textbox" tabindex="0" aria-live="polite" aria-label="Результат символический chmod">
+    </div>
+
+    <div class="result-label" style="margin-top:0.5rem;">Результат (числовой вид):</div>
+    <input type="text" id="resultNumber" readonly aria-label="Результат числовой chmod" style="user-select: all;" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

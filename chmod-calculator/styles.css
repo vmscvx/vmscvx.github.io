@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+:root {
+    --bg: #f8f8f8;
+    --bg-input: #fff;
+    --border: #cbd5e1;
+    --border-focus: #444;
+    --text: #1f1f1f;
+    --text-muted: #64748b;
+    --primary: #444;
+    --primary-bg: #ddd;
+    --checkbox-bg: #e2e8f0;
+    --checkbox-hover: #bbb;
+    --shadow: rgba(0, 0, 0, 0.05);
+    --radius: 8px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #181818;
+        --bg-input: #1f1f1f;
+        --border: #374151;
+        --border-focus: #bbb;
+        --text: #d7d7d7;
+        --text-muted: #94a3b8;
+        --primary: #bbb;
+        --primary-bg: #444;
+        --checkbox-bg: #374151;
+        --checkbox-hover: #555;
+        --shadow: rgba(0, 0, 0, 0.7);
+    }
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 1rem 1.5rem 2.5rem;
+    user-select: none;
+    line-height: 1.4;
+}
+
+h1 {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: var(--primary);
+    user-select: text;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    user-select: text;
+}
+
+input[type=text] {
+    width: 100%;
+    padding: 0.55rem 1rem;
+    border: 1.8px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    color: var(--text);
+    background: var(--bg-input);
+    box-shadow: 0 1px 3px var(--shadow);
+    transition: border-color var(--transition);
+    outline-offset: 2px;
+    outline-color: transparent;
+    box-sizing: border-box;
+}
+
+input[type=text]:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 2px 6px var(--primary-bg);
+    outline-color: var(--border-focus);
+}
+
+input[type=text]::placeholder {
+    color: var(--text-muted);
+}
+
+.flags-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    gap: 1rem;
+    user-select: none;
+}
+
+.flags-col {
+    flex: 1 1 0;
+    background: var(--bg-input);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2.5px 12px var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.flags-col strong {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    user-select: text;
+}
+
+/* Кастом чекбоксы */
+label.flag-label {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    position: relative;
+    padding-left: 33px;
+    color: var(--text);
+    transition: color 0.15s ease-in-out;
+}
+
+input.flag {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+label.flag-label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 23px;
+    height: 23px;
+    border-radius: 6px;
+    background: var(--checkbox-bg);
+    border: 2.5px solid var(--border);
+    transition: background-color var(--transition), border-color var(--transition);
+    box-sizing: border-box;
+}
+
+label.flag-label:hover::before {
+    background: var(--checkbox-hover);
+    border-color: var(--border-focus);
+}
+
+input.flag:checked+label.flag-label::before {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+input.flag:checked+label.flag-label::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    width: 7px;
+    height: 14px;
+    border: solid #fff;
+    border-width: 0 3px 3px 0;
+    transform: translateY(-50%) rotate(45deg);
+    pointer-events: none;
+}
+
+.flags-col label.flag-label:not(:last-child) {
+    margin-bottom: 0.55rem;
+}
+
+#resultString,
+#resultNumber {
+    margin-top: 1rem;
+    font-family: monospace;
+    font-weight: 600;
+    padding: 0.7rem 1rem;
+    background: var(--bg-input);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 5px var(--shadow);
+    user-select: text;
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+#resultNumber {
+    margin-top: 0.5rem;
+    color: var(--primary);
+    cursor: default;
+    border: 1.5px solid var(--border);
+}
+
+.result-label {
+    margin-top: 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    user-select: text;
+    color: var(--text-muted);
+}
+
+@media (max-width: 450px) {
+    .flags-group {
+        flex-direction: column;
+    }
+
+    .flags-col {
+        margin-bottom: 1rem;
+    }
+}
