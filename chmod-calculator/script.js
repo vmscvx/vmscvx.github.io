@@ -1,7 +1,6 @@
 $(function () {
     const fileTypes = ['-', 'd', 'l', 'c', 'b', 's', 'p'];
 
-    // Парсим строковый режим
     function parseSymbolic(str) {
         str = str.trim();
         if (str.length < 10) return null;
@@ -9,7 +8,6 @@ $(function () {
         if (!fileTypes.includes(typeChar)) typeChar = '-';
         let perms = str.slice(1, 10);
         let parts = [perms.slice(0, 3), perms.slice(3, 6), perms.slice(6, 9)];
-
         let flags = { user: {}, group: {}, others: {} };
         ['user', 'group', 'others'].forEach((e, i) => {
             flags[e].read = parts[i][0] === 'r';
@@ -18,8 +16,6 @@ $(function () {
         });
         return { flags, typeChar };
     }
-
-    // Парсим числовой режим (3-4 цифры)
     function parseNumeric(s) {
         s = s.trim();
         if (!/^[0-7]{3,4}$/.test(s)) return null;
@@ -39,15 +35,11 @@ $(function () {
         });
         return { flags, special };
     }
-
-    // Флаги в строку
     function flagsToString(f) {
         return ['user', 'group', 'others'].map(e =>
             (f[e].read ? 'r' : '-') + (f[e].write ? 'w' : '-') + (f[e].execute ? 'x' : '-')
         ).join('');
     }
-
-    // Флаги в цифры
     function flagsToNumeric(f, special = 0) {
         let dig = ['user', 'group', 'others'].map(e => {
             let v = 0;
@@ -58,32 +50,23 @@ $(function () {
         });
         return special > 0 ? special + dig.join('') : dig.join('');
     }
-
-    // Обновить чекбоксы
     function updateChecks(f) {
         $('.flag').each(function () {
             let $c = $(this), t = $c.data('type'), p = $c.data('perm');
             $c.prop('checked', f[t][p]);
         });
     }
-
-    // Обновить все поля
     let busy = false;
     function updateAll(f, special = 0, typeChar = '-') {
         if (busy) return;
         busy = true;
         let str = typeChar + flagsToString(f);
         let num = flagsToNumeric(f, special);
-
         if (!$('#modeString').is(':focus')) $('#modeString').val(str);
         if (!$('#modeNumber').is(':focus')) $('#modeNumber').val(num);
         updateChecks(f);
-        $('#resultString').text(str);
-        $('#resultNumber').val(num);
         busy = false;
     }
-
-    // Считать флаги из чекбоксов
     function getFlagsFromChecks() {
         let flags = { user: {}, group: {}, others: {} };
         $('.flag').each(function () {
@@ -92,8 +75,6 @@ $(function () {
         });
         return flags;
     }
-
-    // События
     $('#modeString').on('input', function () {
         if (busy) return;
         let val = $(this).val();
@@ -111,7 +92,5 @@ $(function () {
         if (busy) return;
         updateAll(getFlagsFromChecks(), 0, '-');
     });
-
-    // Стартовое значение
     $('#modeNumber').val('644').trigger('input');
 });

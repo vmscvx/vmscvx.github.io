@@ -108,7 +108,6 @@ input[type=text]::placeholder {
     user-select: text;
 }
 
-/* Кастом чекбоксы */
 label.flag-label {
     cursor: pointer;
     user-select: none;
@@ -169,35 +168,6 @@ input.flag:checked+label.flag-label::after {
 
 .flags-col label.flag-label:not(:last-child) {
     margin-bottom: 0.55rem;
-}
-
-#resultString,
-#resultNumber {
-    margin-top: 1rem;
-    font-family: monospace;
-    font-weight: 600;
-    padding: 0.7rem 1rem;
-    background: var(--bg-input);
-    border-radius: var(--radius);
-    box-shadow: 0 1px 5px var(--shadow);
-    user-select: text;
-    text-align: center;
-    font-size: 1.3rem;
-}
-
-#resultNumber {
-    margin-top: 0.5rem;
-    color: var(--primary);
-    cursor: default;
-    border: 1.5px solid var(--border);
-}
-
-.result-label {
-    margin-top: 1.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    user-select: text;
-    color: var(--text-muted);
 }
 
 @media (max-width: 450px) {
