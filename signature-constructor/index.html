@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="none" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Конструктор подписи Вольтмаркет</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+</head>
+
+<body>
+
+    <div class="form-container">
+        <h1>Создание подписи</h1>
+
+        <label for="name">ФИО:</label>
+        <input type="text" id="name" placeholder="Введите ФИО">
+
+        <label for="role">Должность:</label>
+        <input type="text" id="role" placeholder="Введите должность">
+
+        <label for="address">Адрес:</label>
+        <input type="text" id="address" placeholder="Введите адрес">
+
+        <label for="mail">E-mail:</label>
+        <input type="text" id="mail" placeholder="Введите E-mail">
+
+        <label for="extension">Добавочный номер:</label>
+        <input type="text" id="extension" placeholder="Введите добавочный номер">
+
+        <label for="phone1">Телефон 1:</label>
+        <input type="text" id="phone1" placeholder="Введите телефон 1">
+
+        <label for="phone2">Телефон 2:</label>
+        <input type="text" id="phone2" placeholder="Введите телефон 2">
+
+        <input type="button" value="Создать подпись и скопировать в буфер обмена" onclick="getSignature(true)">
+
+        <h2>Подпись:</h2>
+        <textarea id="signature" readonly></textarea>
+    </div>
+
+    <div class="preview-container">
+        <iframe id="signaturePreview" class="preview-iframe" sandbox="allow-same-origin"></iframe>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="robots" content="none" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Конструктор подписи Вольтмаркет</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>vmscvx — Проекты</title>
+    <meta name="description"
+        content="Минималистичная главная страница с ссылками на проекты: распознавание кириллицы/латиницы, Uniel Info, конструктор подписи.">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -16,43 +17,50 @@
 </head>
 
 <body>
+    <div class="container" role="main" aria-labelledby="main-title">
+        <header class="header">
+            <div class="logo" aria-hidden="true">vX</div>
+            <div>
+                <div id="main-title" class="title">vmscvx — Проекты</div>
+                <div class="tagline">Минималистичные инструменты и небольшие веб‑приложения</div>
+            </div>
+        </header>
 
-    <div class="form-container">
-        <h1>Создание подписи</h1>
+        <main>
+            <nav class="grid" aria-label="Список приложений">
+                <a class="card" href="/cyrillic-latin/" aria-labelledby="t1 d1">
+                    <div class="h">
+                        <div class="icon" aria-hidden="true">АЯ</div>
+                        <h3 id="t1">Распознавание кириллицы и латиницы</h3>
+                    </div>
+                    <p id="d1">Найти похожие или ошибочно заменённые буквы между кириллицей и латиницей в тексте —
+                        полезно для проверки смешанных или поддельных строк.</p>
+                </a>
 
-        <label for="name">ФИО:</label>
-        <input type="text" id="name" placeholder="Введите ФИО">
+                <a class="card" href="/uniel-info/" aria-labelledby="t2 d2">
+                    <div class="h">
+                        <div class="icon" aria-hidden="true">U</div>
+                        <h3 id="t2">Приложение Uniel Info</h3>
+                    </div>
+                    <p id="d2">Сканируйте штрихкоды продукции Uniel, чтобы быстро получить данные о кодах товаров.</p>
+                </a>
 
-        <label for="role">Должность:</label>
-        <input type="text" id="role" placeholder="Введите должность">
+                <a class="card" href="/signature-constructor/" aria-labelledby="t3 d3">
+                    <div class="h">
+                        <div class="icon" aria-hidden="true">✉</div>
+                        <h3 id="t3">Конструктор подписи Вольтмаркет</h3>
+                    </div>
+                    <p id="d3">Создайте персональную подпись в фирменном стиле для электронной почты — готовый HTML для
+                        вставки в почтовые клиенты.</p>
+                </a>
+            </nav>
+        </main>
 
-        <label for="address">Адрес:</label>
-        <input type="text" id="address" placeholder="Введите адрес">
-
-        <label for="mail">E-mail:</label>
-        <input type="text" id="mail" placeholder="Введите E-mail">
-
-        <label for="extension">Добавочный номер:</label>
-        <input type="text" id="extension" placeholder="Введите добавочный номер">
-
-        <label for="phone1">Телефон 1:</label>
-        <input type="text" id="phone1" placeholder="Введите телефон 1">
-
-        <label for="phone2">Телефон 2:</label>
-        <input type="text" id="phone2" placeholder="Введите телефон 2">
-
-        <input type="button" value="Создать подпись и скопировать в буфер обмена" onclick="getSignature(true)">
-
-        <h2>Подпись:</h2>
-        <textarea id="signature" readonly></textarea>
+        <footer class="footer" aria-label="Футер">
+            <div>© vmscvx</div>
+            <div><a href="https://github.com/vmscvx" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+        </footer>
     </div>
-
-    <div class="preview-container">
-        <iframe id="signaturePreview" class="preview-iframe" sandbox="allow-same-origin"></iframe>
-    </div>
-
-    <script src="script.js"></script>
-
 </body>
 
 </html>
