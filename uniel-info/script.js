@@ -3,6 +3,10 @@
 
     const DATA_URL = 'https://raw.githubusercontent.com/vmscvx/updates/refs/heads/main/data.txt';
     const BARCODE_START = 2000000000000n;
+    const DB_NAME = 'uniel-info-db';
+    const STORE_NAME = 'store';
+    const DB_KEY = 'db';
+    const WEEK_SECONDS = 7 * 24 * 60 * 60;
 
     const $start = $('#start-scan');
     const $overlay = $('#overlay');
@@ -31,6 +35,59 @@
     let dbReadyPromise = null;
     let dbBarcodes = null;
     let dbArticles = null;
+
+    function idbOpen() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = function () {
+                const db = req.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
+                }
+            };
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error); };
+        });
+    }
+
+    function idbGet(key) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const db = await idbOpen();
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const r = store.get(key);
+                r.onsuccess = () => resolve(r.result);
+                r.onerror = () => reject(r.error);
+            } catch (e) { reject(e); }
+        });
+    }
+
+    function idbPut(key, value) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const db = await idbOpen();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const r = store.put(value, key);
+                r.onsuccess = () => resolve();
+                r.onerror = () => reject(r.error);
+            } catch (e) { reject(e); }
+        });
+    }
+
+    function idbDelete(key) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const db = await idbOpen();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const r = store.delete(key);
+                r.onsuccess = () => resolve();
+                r.onerror = () => reject(r.error);
+            } catch (e) { reject(e); }
+        });
+    }
 
     function formatEAN13(code) {
         const d = (code || '').replace(/\D/g, '');
@@ -208,29 +265,85 @@
         }
     }
 
+    async function fetchRemoteTimestampSmall() {
+        try {
+            const r = await fetch(DATA_URL, { headers: { 'Range': 'bytes=0-512' } });
+            if (!r.ok && r.status !== 206) {
+                if (r.status === 200) {
+                    const text = await r.text();
+                    const first = text.split(/\r?\n/)[0];
+                    const n = parseInt(first, 10);
+                    if (!isNaN(n)) return n;
+                }
+                return null;
+            }
+            const text = await r.text();
+            const first = text.split(/\r?\n/)[0];
+            const n = parseInt(first, 10);
+            if (!isNaN(n)) return n;
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function fetchFullAndParseAndStore() {
+        const resp = await fetch(DATA_URL);
+        if (!resp.ok) throw new Error('Не удалось загрузить базу: ' + resp.status);
+        const text = await resp.text();
+        const lines = text.split(/\r?\n/);
+        if (lines.length < 2) throw new Error('Некорректный формат базы');
+        const timestamp = parseInt(lines[0].trim(), 10);
+        if (isNaN(timestamp)) throw new Error('Некорректный timestamp');
+        const dataLines = lines.slice(1).filter(l => l && l.trim().length > 0);
+        const barcodesStr = new Array(dataLines.length);
+        const articles = new Array(dataLines.length);
+        let cum = 0n;
+        for (let i = 0; i < dataLines.length; i++) {
+            const line = dataLines[i].trim();
+            const parts = line.split(';');
+            const delta = BigInt(parts[0].trim());
+            const article = parts[1] ? parts.slice(1).join(';').trim() : null;
+            cum += delta;
+            const barcode = BARCODE_START + cum;
+            barcodesStr[i] = barcode.toString();
+            articles[i] = article && article.length ? article : null;
+        }
+        await idbPut(DB_KEY, { timestamp: timestamp, barcodes: barcodesStr, articles: articles });
+        dbBarcodes = barcodesStr.map(s => BigInt(s));
+        dbArticles = articles;
+    }
+
+    function loadCacheToMemory(cached) {
+        if (!cached) return;
+        dbBarcodes = (cached.barcodes || []).map(s => BigInt(s));
+        dbArticles = cached.articles || [];
+    }
+
     function ensureDatabaseLoaded() {
         if (dbReadyPromise) return dbReadyPromise;
         dbReadyPromise = (async () => {
             showGlobalLoader();
-            const resp = await fetch(DATA_URL);
-            if (!resp.ok) throw new Error('Не удалось загрузить базу: ' + resp.status);
-            const text = await resp.text();
-            const lines = text.split(/\r?\n/);
-            if (lines.length < 2) throw new Error('Некорректный формат базы');
-            const dataLines = lines.slice(1).filter(l => l && l.trim().length > 0);
-            dbBarcodes = new Array(dataLines.length);
-            dbArticles = new Array(dataLines.length);
-            let cum = 0n;
-            for (let i = 0; i < dataLines.length; i++) {
-                const line = dataLines[i].trim();
-                const parts = line.split(';');
-                const delta = BigInt(parts[0].trim());
-                const article = parts[1] ? parts.slice(1).join(';').trim() : null;
-                cum += delta;
-                dbBarcodes[i] = BARCODE_START + cum;
-                dbArticles[i] = article && article.length ? article : null;
+            try {
+                const cached = await idbGet(DB_KEY);
+                if (!cached) {
+                    await fetchFullAndParseAndStore();
+                    hideGlobalLoader();
+                    return;
+                }
+                loadCacheToMemory(cached);
+                const remoteTs = await fetchRemoteTimestampSmall();
+                if (remoteTs === null) {
+                    hideGlobalLoader();
+                    return;
+                }
+                const localTs = cached.timestamp || 0;
+                if (remoteTs > localTs + WEEK_SECONDS) {
+                    await fetchFullAndParseAndStore();
+                }
+            } finally {
+                hideGlobalLoader();
             }
-            hideGlobalLoader();
         })();
         return dbReadyPromise;
     }
