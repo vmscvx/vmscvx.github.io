@@ -14,9 +14,6 @@ async function loadBanner(url = 'banner.txt') {
 
 // Основная функция для формирования подписи
 async function getSignature(copy) {
-    // Загружаем banner.txt
-    const banner = await loadBanner();
-
     // Кэшируем элементы DOM
     const nameEl = document.getElementById('name');
     const roleEl = document.getElementById('role');
@@ -28,6 +25,13 @@ async function getSignature(copy) {
     const signatureEl = document.getElementById('signature');
     const iframe = document.getElementById('signaturePreview');
     const previewIframe = document.querySelector('.preview-iframe');
+    const includeBannerEl = document.getElementById('includeBanner');
+
+    // Проверяем, нужно ли включать баннер
+    const includeBanner = includeBannerEl?.checked;
+
+    // Загружаем banner.txt только если чекбокс отмечен
+    const banner = includeBanner ? await loadBanner() : '';
 
     // Получаем значения, подставляя значение по умолчанию, если поле пустое
     const fullname = getStringOrTemplate(nameEl.value, 'ФИО');
@@ -38,30 +42,23 @@ async function getSignature(copy) {
     const mail = getStringOrTemplate(mailEl.value, 'sale@volt-market.com');
     const extensionValue = extensionEl.value;
     const extension = extensionValue ? `, доб. ${extensionValue}` : '';
-
     // Форматируем номера телефонов
     const phone1 = getFormattedPhoneString(phone1El.value);
     const phone2 = getFormattedPhoneString(phone2El.value);
     const phones = phone1 + phone2;
-
     // Формируем основной HTML для подписи
     const cred = `<div style="font-family:Calibri,sans-serif"><div style="border-left:3px solid #fd9c12;padding-left:10px"><p style="font-weight:700;margin:0">С уважением,</p><p style="font-weight:700;margin:0">${fullname}</p>${role}${address}<p style="margin:5px 0">Компания "Вольтмаркет"</p><p style="margin:5px 0">Телефон: <a href="tel:88005501161" style="color:#fd9c12;text-decoration:none">8 (800) 550-11-61</a>${extension}</p>${phones}<p style="margin:5px 0">E-mail: <a href="mailto:${mail}" style="color:#fd9c12;text-decoration:none">${mail}</a></p></div></div>`;
-
-    // Объединяем основную часть и banner
+    // Объединяем основную часть и banner (если есть)
     const signature = cred + banner;
-
     // Выводим подпись в textarea
     signatureEl.value = signature;
-
     // Записываем HTML-подпись в iframe для предпросмотра
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
     iframeDoc.write(`<!DOCTYPE html>${signature}`);
     iframeDoc.close();
-
     // Делает блок предпросмотра видимым
     previewIframe.style.display = 'block';
-
     // Копирование подписи в буфер обмена
     if (copy) {
         try {
@@ -79,7 +76,6 @@ const getStringOrTemplate = (str, template) =>
 // Функция для форматирования номера телефона
 function getFormattedPhoneString(phoneNumber) {
     const cleaned = phoneNumber.replace(/\D/g, '');
-
     if (cleaned.length === 11 && /^[78]/.test(cleaned)) {
         const formatted = `+7 (${cleaned.substring(1, 4)}) ${cleaned.substring(4, 7)}-${cleaned.substring(7, 9)}-${cleaned.substring(9, 11)}`;
         return `<p style="margin:5px 0">Мобильный (WhatsApp/Viber): <a href="tel:+${cleaned}" style="color:#fd9c12;text-decoration:none">${formatted}</a></p>`;
@@ -87,7 +83,14 @@ function getFormattedPhoneString(phoneNumber) {
     return '';
 }
 
-// Инициализация подписи при загрузке страницы
+// Инициализация подписи при загрузке страницы и привязка обработчика к чекбоксу
 document.addEventListener('DOMContentLoaded', () => {
-    getSignature(); // Вызываем функцию для генерации подписи
+    // Сгенерировать подпись при загрузке
+    getSignature();
+
+    // Обновлять подпись при изменении чекбокса (включить/выключить баннер)
+    const includeBannerEl = document.getElementById('includeBanner');
+    if (includeBannerEl) {
+        includeBannerEl.addEventListener('change', () => getSignature());
+    }
 });
