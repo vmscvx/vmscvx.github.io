@@ -1,66 +1,51 @@
-$(document).ready(function () {
-	$('.input').on('input', start);
+(() => {
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const input = $("input"), highlight = $("highlight");
+    const latinCountEl = $("latinCount"), cyrilCountEl = $("cyrilCount"), totalCountEl = $("totalCount");
+    const btnClear = $("btnClear"), btnSample = $("btnSample"), btnCopy = $("btnCopy");
 
-	function escapeHtml(string) {
-		return String(string).replace(/[&<>"']/g, function (s) {
-			return ({
-				'&': '&amp;',
-				'<': '&lt;',
-				'>': '&gt;',
-				'"': '&quot;',
-				"'": '&#39;'
-			})[s];
-		});
-	}
+    const esc = s => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    const reLat = /[\u0041-\u005A\u0061-\u007A\u00C0-\u00FF\u0100-\u024F]/;
+    const reCyr = /[\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F]/;
 
-	// Быстрое определение типа символа: 0 - другой, 1 - латиница, 2 - кириллица
-	function getCharType(ch) {
-		const code = ch.charCodeAt(0);
-		// Латиница: A-Z (65–90), a-z (97–122)
-		if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122))
-			return 1;
-		// Кириллица: А-Я (1040–1071), а-я (1072–1103), Ё (1025), ё (1105)
-		if ((code >= 1040 && code <= 1103) || code === 1025 || code === 1105)
-			return 2;
-		return 0;
-	}
+    const kind = ch => reLat.test(ch) ? 1 : (reCyr.test(ch) ? 2 : 0);
+    const wrap = (k, s) => !s ? "" : (k === 1 ? `<span class="lat">${esc(s)}</span>` : k === 2 ? `<span class="cyr">${esc(s)}</span>` : esc(s));
 
-	function start() {
-		var istr = $('.input').val();
-		var ostr = '';
-		var cond = 0, condp = 0;
-		for (let i = 0; i < istr.length; i++) {
-			let ch = istr[i];
-			condp = cond;
-			cond = getCharType(ch);
+    function render() {
+        const t = input.value;
+        let lat = 0, cyr = 0, out = "";
+        if (t.length) {
+            let start = 0, pk = kind(t[0]);
+            for (let i = 0; i < t.length; i++) {
+                const k = kind(t[i]);
+                if (k === 1) lat++; else if (k === 2) cyr++;
+                if (i && k !== pk) { out += wrap(pk, t.slice(start, i)); start = i; pk = k; }
+            }
+            out += wrap(pk, t.slice(start));
+        }
+        highlight.innerHTML = out + (t.endsWith("\n") ? "\n" : "");
+        latinCountEl.textContent = lat;
+        cyrilCountEl.textContent = cyr;
+        totalCountEl.textContent = t.length;
+    }
 
-			if (cond !== condp) {
-				if (condp === 1 || condp === 2) ostr += '</span>';
-				if (cond === 1) ostr += '<span class="lat">';
-				else if (cond === 2) ostr += '<span class="cyr">';
-			}
-			ostr += escapeHtml(ch);
-		}
-		if (cond === 1 || cond === 2) ostr += '</span>';
-		$('.output').html(ostr);
-	}
+    const sync = () => { highlight.scrollTop = input.scrollTop; highlight.scrollLeft = input.scrollLeft };
 
-	start();
+    input.addEventListener("input", render, { passive: true });
+    input.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync, { passive: true });
 
-	function syncScroll(el1, el2) {
-		let $el1 = $(el1), $el2 = $(el2), forced = false;
-		$el1.scroll(function () {
-			if (forced) return forced = false;
-			forced = true;
-			$el2.scrollTop($el1.scrollTop());
-			$el2.scrollLeft($el1.scrollLeft());
-		});
-		$el2.scroll(function () {
-			if (forced) return forced = false;
-			forced = true;
-			$el1.scrollTop($el2.scrollTop());
-			$el1.scrollLeft($el2.scrollLeft());
-		});
-	}
-	syncScroll($('.input'), $('.output'));
-});
+    btnClear.addEventListener("click", () => { input.value = ""; render(); input.focus() });
+    btnSample.addEventListener("click", () => {
+        input.value = "Пример: Hello, мир!\nСмешанный текст: The quick brown fox — быстрый лис.\nПроверка: A a Z z; А а Я я; Ё ё; Ї ї; Қ қ.";
+        render(); input.focus();
+    });
+    btnCopy.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(input.value); btnCopy.textContent = "Скопировано"; setTimeout(() => btnCopy.textContent = "Скопировать текст", 900) }
+        catch { input.focus(); input.select(); document.execCommand("copy") }
+    });
+    highlight.addEventListener("mousedown", e => { e.preventDefault(); input.focus() });
+
+    render();
+})();
