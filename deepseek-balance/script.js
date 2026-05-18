@@ -26,7 +26,7 @@
     }
 
     function checkAndNotify(n) {
-        if (lastBalance !== null && lastNotified !== null && Math.abs(n - lastNotified) >= 10) {
+        if (lastBalance !== null && lastNotified !== null && Math.abs(n - lastNotified) >= 0.1) {
             notify('Изменение баланса DeepSeek', n);
             lastNotified = n;
         } else if (lastNotified === null) {
