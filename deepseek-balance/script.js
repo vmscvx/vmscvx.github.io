@@ -34,19 +34,19 @@
     }
 
     // Показывает нотификацию (если возможно), текст форматирован как на странице
-    function showNotification(title, balanceNumber, currency) {
+    function showNotification(title, balanceNumber) {
         if (Notification.permission === 'granted') {
-            const formattedBalance = formatBalance(balanceNumber) + (currency ? ' ' + currency : '');
+            const formattedBalance = formatBalance(balanceNumber);
             new Notification(title, { body: `Текущий баланс: ${formattedBalance}` });
         }
     }
 
     // Проверяет изменение баланса и отправляет нотификацию при необходимости
-    function checkBalanceAndNotify(newBalanceNumber, currency) {
+    function checkBalanceAndNotify(newBalanceNumber) {
         if (lastBalanceNumber !== null && lastNotifiedBalance !== null) {
             const diff = Math.abs(newBalanceNumber - lastNotifiedBalance);
             if (diff >= 10) {
-                showNotification('Изменение баланса DeepSeek', newBalanceNumber, currency);
+                showNotification('Изменение баланса DeepSeek', newBalanceNumber);
                 lastNotifiedBalance = newBalanceNumber;
             }
         } else {
@@ -90,10 +90,9 @@
 
             if (data.balance_infos && data.balance_infos[0] && typeof data.balance_infos[0].total_balance === 'string') {
                 const balanceNumber = parseFloat(data.balance_infos[0].total_balance);
-                const currency = data.balance_infos[0].currency || '';
                 localStorage.setItem(BALANCE_KEY, balanceNumber.toString());
                 localStorage.setItem(LAST_UPDATE_KEY, Date.now().toString());
-                updateBalanceOnPage(balanceNumber, currency);
+                updateBalanceOnPage(balanceNumber);
             } else {
                 throw new Error('Некорректный ответ');
             }
@@ -101,7 +100,7 @@
             console.warn(e);
             const storedBalance = localStorage.getItem(BALANCE_KEY);
             if (storedBalance !== null) {
-                updateBalanceOnPage(Number(storedBalance), '');
+                updateBalanceOnPage(Number(storedBalance));
             } else {
                 balanceElem.textContent = 'Ошибка';
             }
@@ -120,11 +119,50 @@
         }
     }
 
-    function updateBalanceOnPage(balanceNumber, currency) {
-        const suffix = currency ? ' ' + currency : '';
-        balanceElem.textContent = formatBalance(balanceNumber) + suffix;
-        checkBalanceAndNotify(balanceNumber, currency);
-        document.title = `Баланс DeepSeek: ${formatBalance(balanceNumber)}${suffix}`;
+    function updateBalanceOnPage(balanceNumber) {
+        balanceElem.textContent = formatBalance(balanceNumber);
+        checkBalanceAndNotify(balanceNumber);
+        document.title = `Баланс DeepSeek: ${formatBalance(balanceNumber)}`;
+    }
+
+    async function updateIfNeeded() {
+        const lastUpdate = localStorage.getItem(LAST_UPDATE_KEY);
+        const now = Date.now();
+        if (lastUpdate) {
+            const diffMin = (now - parseInt(lastUpdate, 10)) / 60000;
+            if (diffMin >= 1) {
+                await fetchBalance();
+            } else {
+                const storedBalance = localStorage.getItem(BALANCE_KEY);
+                if (storedBalance !== null) {
+                    updateBalanceOnPage(Number(storedBalance));
+                } else {
+                    await fetchBalance();
+                }
+            }
+        } else {
+            await fetchBalance();
+        }
+    }
+        }
+    }
+
+    function handleInvalidToken() {
+        alert('API-ключ недействителен или истёк. Пожалуйста, введите новый ключ.');
+        localStorage.removeItem(TOKEN_KEY);
+        const newToken = prompt('Введите API-ключ');
+        if (newToken) {
+            localStorage.setItem(TOKEN_KEY, newToken);
+            fetchBalance();
+        } else {
+            balanceElem.textContent = 'Нет токена';
+        }
+    }
+
+    function updateBalanceOnPage(balanceNumber) {
+        balanceElem.textContent = formatBalance(balanceNumber);
+        checkBalanceAndNotify(balanceNumber);
+        document.title = `Баланс DeepSeek: ${formatBalance(balanceNumber)}`;
     }
 
     async function updateIfNeeded() {
