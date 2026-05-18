@@ -1,196 +1,94 @@
 (function () {
-    const BALANCE_KEY = 'deepseek_balance';
-    const TOKEN_KEY = 'deepseek_token';
-    const LAST_UPDATE_KEY = 'deepseek_balance_last_update';
+    const KEYS = {
+        balance: 'deepseek_balance',
+        token: 'deepseek_token',
+        lastUpdate: 'deepseek_balance_last_update'
+    };
 
-    const balanceElem = document.getElementById('balance');
-    let lastBalanceNumber = null;
-    let lastNotifiedBalance = null;
+    const el = document.getElementById('balance');
+    let lastBalance = null;
+    let lastNotified = null;
 
-    // Форматирует число: два знака после запятой, запятая, пробелы для тысяч
-    function formatBalance(number) {
-        let numStr = Number(number).toFixed(2).replace('.', ',');
-        return insertThousandSpaces(numStr);
+    function fmt(n) {
+        const parts = Number(n).toFixed(2).replace('.', ',').split(',');
+        let intPart = parts[0], sign = '';
+        if (intPart.startsWith('-')) { sign = '-'; intPart = intPart.slice(1); }
+        return sign + intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (parts[1] ? ',' + parts[1] : '');
     }
 
-    function insertThousandSpaces(numberStr) {
-        const parts = numberStr.split(',');
-        let integerPart = parts[0];
-        const decimalPart = parts[1] || '';
-        let sign = '';
-        if (integerPart.startsWith('-')) {
-            sign = '-';
-            integerPart = integerPart.slice(1);
+    function requestPerm() {
+        if (Notification.permission === 'default') Notification.requestPermission();
+    }
+
+    function notify(title, n) {
+        if (Notification.permission !== 'granted') return;
+        new Notification(title, { body: 'Текущий баланс: ' + fmt(n) });
+    }
+
+    function checkAndNotify(n) {
+        if (lastBalance !== null && lastNotified !== null && Math.abs(n - lastNotified) >= 10) {
+            notify('Изменение баланса DeepSeek', n);
+            lastNotified = n;
+        } else if (lastNotified === null) {
+            lastNotified = n;
         }
-        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-        return sign + integerPart + (decimalPart ? ',' + decimalPart : '');
+        lastBalance = n;
     }
 
-    // Просим разрешение только если не решено (default)
-    function requestNotificationPermission() {
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
+    function token() {
+        let t = localStorage.getItem(KEYS.token);
+        if (!t) {
+            t = prompt('Введите API-ключ');
+            if (t) localStorage.setItem(KEYS.token, t);
         }
+        return t;
     }
 
-    // Показывает нотификацию (если возможно), текст форматирован как на странице
-    function showNotification(title, balanceNumber) {
-        if (Notification.permission === 'granted') {
-            const formattedBalance = formatBalance(balanceNumber);
-            new Notification(title, { body: `Текущий баланс: ${formattedBalance}` });
-        }
-    }
-
-    // Проверяет изменение баланса и отправляет нотификацию при необходимости
-    function checkBalanceAndNotify(newBalanceNumber) {
-        if (lastBalanceNumber !== null && lastNotifiedBalance !== null) {
-            const diff = Math.abs(newBalanceNumber - lastNotifiedBalance);
-            if (diff >= 10) {
-                showNotification('Изменение баланса DeepSeek', newBalanceNumber);
-                lastNotifiedBalance = newBalanceNumber;
-            }
-        } else {
-            lastNotifiedBalance = newBalanceNumber;
-        }
-        lastBalanceNumber = newBalanceNumber;
-    }
-
-    // Получает или просит у пользователя токен
-    function getToken() {
-        let token = localStorage.getItem(TOKEN_KEY);
-        if (!token) {
-            token = prompt('Введите API-ключ');
-            if (token) {
-                localStorage.setItem(TOKEN_KEY, token);
-            }
-        }
-        return token;
-    }
-
-    // Обрабатывает получение баланса через API
     async function fetchBalance() {
-        const token = getToken();
-        if (!token) {
-            balanceElem.textContent = 'Нет токена';
-            return;
-        }
-
+        const t = token();
+        if (!t) { el.textContent = 'Нет токена'; return; }
         try {
-            const response = await fetch('https://api.deepseek.com/user/balance', {
-                headers: { 'Authorization': 'Bearer ' + token }
+            const res = await fetch('https://api.deepseek.com/user/balance', {
+                headers: { 'Authorization': 'Bearer ' + t }
             });
-
-            if (response.status === 401) {
-                handleInvalidToken();
-                return;
-            }
-
-            if (!response.ok) throw new Error('Ошибка сети или сервера');
-            const data = await response.json();
-
-            if (data.balance_infos && data.balance_infos[0] && typeof data.balance_infos[0].total_balance === 'string') {
-                const balanceNumber = parseFloat(data.balance_infos[0].total_balance);
-                localStorage.setItem(BALANCE_KEY, balanceNumber.toString());
-                localStorage.setItem(LAST_UPDATE_KEY, Date.now().toString());
-                updateBalanceOnPage(balanceNumber);
-            } else {
-                throw new Error('Некорректный ответ');
-            }
-        } catch (e) {
-            console.warn(e);
-            const storedBalance = localStorage.getItem(BALANCE_KEY);
-            if (storedBalance !== null) {
-                updateBalanceOnPage(Number(storedBalance));
-            } else {
-                balanceElem.textContent = 'Ошибка';
-            }
+            if (res.status === 401) return handleInvalid();
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            if (d.balance_infos?.[0]?.total_balance) {
+                const n = parseFloat(d.balance_infos[0].total_balance);
+                localStorage.setItem(KEYS.balance, n);
+                localStorage.setItem(KEYS.lastUpdate, Date.now());
+                render(n);
+            } else throw new Error();
+        } catch {
+            const s = localStorage.getItem(KEYS.balance);
+            s !== null ? render(+s) : el.textContent = 'Ошибка';
         }
     }
 
-    function handleInvalidToken() {
+    function handleInvalid() {
         alert('API-ключ недействителен или истёк. Пожалуйста, введите новый ключ.');
-        localStorage.removeItem(TOKEN_KEY);
-        const newToken = prompt('Введите API-ключ');
-        if (newToken) {
-            localStorage.setItem(TOKEN_KEY, newToken);
-            fetchBalance();
-        } else {
-            balanceElem.textContent = 'Нет токена';
-        }
+        localStorage.removeItem(KEYS.token);
+        const t = prompt('Введите API-ключ');
+        t ? (localStorage.setItem(KEYS.token, t), fetchBalance()) : el.textContent = 'Нет токена';
     }
 
-    function updateBalanceOnPage(balanceNumber) {
-        balanceElem.textContent = formatBalance(balanceNumber);
-        checkBalanceAndNotify(balanceNumber);
-        document.title = `Баланс DeepSeek: ${formatBalance(balanceNumber)}`;
+    function render(n) {
+        el.textContent = fmt(n);
+        checkAndNotify(n);
+        document.title = 'Баланс DeepSeek: ' + fmt(n);
     }
 
-    async function updateIfNeeded() {
-        const lastUpdate = localStorage.getItem(LAST_UPDATE_KEY);
-        const now = Date.now();
-        if (lastUpdate) {
-            const diffMin = (now - parseInt(lastUpdate, 10)) / 60000;
-            if (diffMin >= 1) {
-                await fetchBalance();
-            } else {
-                const storedBalance = localStorage.getItem(BALANCE_KEY);
-                if (storedBalance !== null) {
-                    updateBalanceOnPage(Number(storedBalance));
-                } else {
-                    await fetchBalance();
-                }
-            }
-        } else {
-            await fetchBalance();
-        }
-    }
-        }
+    async function update() {
+        const lu = localStorage.getItem(KEYS.lastUpdate);
+        if (!lu) return fetchBalance();
+        if ((Date.now() - +lu) / 60000 >= 1) return fetchBalance();
+        const s = localStorage.getItem(KEYS.balance);
+        s !== null ? render(+s) : fetchBalance();
     }
 
-    function handleInvalidToken() {
-        alert('API-ключ недействителен или истёк. Пожалуйста, введите новый ключ.');
-        localStorage.removeItem(TOKEN_KEY);
-        const newToken = prompt('Введите API-ключ');
-        if (newToken) {
-            localStorage.setItem(TOKEN_KEY, newToken);
-            fetchBalance();
-        } else {
-            balanceElem.textContent = 'Нет токена';
-        }
-    }
-
-    function updateBalanceOnPage(balanceNumber) {
-        balanceElem.textContent = formatBalance(balanceNumber);
-        checkBalanceAndNotify(balanceNumber);
-        document.title = `Баланс DeepSeek: ${formatBalance(balanceNumber)}`;
-    }
-
-    async function updateIfNeeded() {
-        const lastUpdate = localStorage.getItem(LAST_UPDATE_KEY);
-        const now = Date.now();
-        if (lastUpdate) {
-            const diffMin = (now - parseInt(lastUpdate, 10)) / 60000;
-            if (diffMin >= 1) {
-                await fetchBalance();
-            } else {
-                const storedBalance = localStorage.getItem(BALANCE_KEY);
-                if (storedBalance !== null) {
-                    updateBalanceOnPage(Number(storedBalance));
-                } else {
-                    await fetchBalance();
-                }
-            }
-        } else {
-            await fetchBalance();
-        }
-    }
-
-    // Запуск
-    requestNotificationPermission();
-    updateIfNeeded();
-
-    setInterval(updateIfNeeded, 60000);
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) updateIfNeeded();
-    });
+    requestPerm();
+    update();
+    setInterval(update, 60000);
+    addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
 })();
