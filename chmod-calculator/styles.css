@@ -34,13 +34,11 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: var(--bg);
     color: var(--text);
     max-width: 480px;
     margin: 2rem auto;
     padding: 1rem 1.5rem 2.5rem;
     user-select: none;
-    line-height: 1.4;
 }
 
 h1 {

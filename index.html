@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>vmscvx — Проекты</title>
     <meta name="description"
-        content="Минималистичная главная страница с ссылками на проекты: распознавание кириллицы/латиницы, Uniel Info, конструктор подписи.">
+        content="Минималистичная главная страница с ссылками на проекты: распознавание кириллицы/латиницы, Uniel Info, Chmod Калькулятор, баланс DeepSeek и ProxyAPI.">
+    <link rel="stylesheet" href="/shared.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -17,48 +18,62 @@
 </head>
 
 <body>
-    <div class="container" role="main" aria-labelledby="main-title">
+    <div class="container">
         <header class="header">
             <div class="logo" aria-hidden="true">vX</div>
             <div>
-                <div id="main-title" class="title">vmscvx — Проекты</div>
-                <div class="tagline">Минималистичные инструменты и небольшие веб‑приложения</div>
+                <div class="title">vmscvx</div>
+                <div class="tagline">Инструменты и приложения</div>
             </div>
         </header>
 
         <main>
-            <nav class="grid" aria-label="Список приложений">
-                <a class="card" href="/cyrillic-latin/" aria-labelledby="t1 d1">
-                    <div class="h">
-                        <div class="icon" aria-hidden="true">АЯ</div>
+            <nav class="content" aria-label="Список приложений">
+                <a class="entry" href="/cyrillic-latin/" aria-labelledby="t1 d1">
+                    <span class="mark" aria-hidden="true">АЯ</span>
+                    <div class="entry-body">
                         <h3 id="t1">Распознавание кириллицы и латиницы</h3>
+                        <p id="d1">Поиск похожих или ошибочно заменённых букв между кириллицей и латиницей</p>
                     </div>
-                    <p id="d1">Найти похожие или ошибочно заменённые буквы между кириллицей и латиницей в тексте —
-                        полезно для проверки смешанных или поддельных строк.</p>
                 </a>
 
-                <a class="card" href="/uniel-info/" aria-labelledby="t2 d2">
-                    <div class="h">
-                        <div class="icon" aria-hidden="true">U</div>
+                <a class="entry" href="/uniel-info/" aria-labelledby="t2 d2">
+                    <span class="mark" aria-hidden="true">U</span>
+                    <div class="entry-body">
                         <h3 id="t2">Приложение Uniel Info</h3>
+                        <p id="d2">Сканирование штрихкодов продукции Uniel для получения кодов товаров</p>
                     </div>
-                    <p id="d2">Сканируйте штрихкоды продукции Uniel, чтобы быстро получить данные о кодах товаров.</p>
                 </a>
 
-                <a class="card" href="/signature-constructor/" aria-labelledby="t3 d3">
-                    <div class="h">
-                        <div class="icon" aria-hidden="true">✉</div>
-                        <h3 id="t3">Конструктор подписи Вольтмаркет</h3>
+                <a class="entry" href="/chmod-calculator/" aria-labelledby="t3 d3">
+                    <span class="mark" aria-hidden="true">rwx</span>
+                    <div class="entry-body">
+                        <h3 id="t3">Chmod Калькулятор</h3>
+                        <p id="d3">Конвертер прав доступа Unix между символьной и восьмеричной записью</p>
                     </div>
-                    <p id="d3">Создайте персональную подпись в фирменном стиле для электронной почты — готовый HTML для
-                        вставки в почтовые клиенты.</p>
+                </a>
+
+                <a class="entry" href="/deepseek-balance/" aria-labelledby="t4 d4">
+                    <span class="mark" aria-hidden="true">DS</span>
+                    <div class="entry-body">
+                        <h3 id="t4">Баланс DeepSeek</h3>
+                        <p id="d4">Отслеживание баланса API с автообновлением и уведомлениями</p>
+                    </div>
+                </a>
+
+                <a class="entry" href="/proxyapi-balance/" aria-labelledby="t5 d5">
+                    <span class="mark" aria-hidden="true">PA</span>
+                    <div class="entry-body">
+                        <h3 id="t5">Баланс ProxyAPI</h3>
+                        <p id="d5">Отслеживание баланса ProxyAPI с автообновлением и уведомлениями</p>
+                    </div>
                 </a>
             </nav>
         </main>
 
-        <footer class="footer" aria-label="Футер">
-            <div>© vmscvx</div>
-            <div><a href="https://github.com/vmscvx" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+        <footer class="footer">
+            <span>© vmscvx</span>
+            <a href="https://github.com/vmscvx" target="_blank" rel="noopener noreferrer">GitHub</a>
         </footer>
     </div>
 </body>

@@ -1,10 +1,32 @@
+:root {
+    --sig-bg: #f9f9f9;
+    --sig-surface: #ffffff;
+    --sig-text: #333333;
+    --sig-muted: #444444;
+    --sig-border: #dddddd;
+    --sig-accent: #fd9c12;
+    --sig-accent-hover: #e68a0f;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --sig-bg: #121212;
+        --sig-surface: #1e1e1e;
+        --sig-text: #d7d7d7;
+        --sig-muted: #9aa6b2;
+        --sig-border: #374151;
+        --sig-accent: #fd9c12;
+        --sig-accent-hover: #e68a0f;
+    }
+}
+
 body {
     font-family: 'Roboto', sans-serif;
     margin: 20px;
     display: flex;
     justify-content: center;
-    background-color: #f9f9f9;
-    color: #333;
+    background-color: var(--sig-bg);
+    color: var(--sig-text);
 }
 
 .form-container {
@@ -20,7 +42,7 @@ label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #444;
+    color: var(--sig-muted);
 }
 
 input[type="text"],
@@ -29,21 +51,22 @@ textarea {
     margin-bottom: 10px;
     width: calc(100% - 16px);
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--sig-border);
     border-radius: 8px;
     transition: border-color 0.3s;
-    background-color: #fff;
+    background-color: var(--sig-surface);
+    color: var(--sig-text);
 }
 
 input[type="text"]:focus,
 textarea:focus {
-    border-color: #fd9c12;
+    border-color: var(--sig-accent);
     outline: none;
 }
 
 input[type="button"] {
     padding: 10px 15px;
-    background-color: #fd9c12;
+    background-color: var(--sig-accent);
     color: white;
     border: none;
     border-radius: 8px;
@@ -53,7 +76,7 @@ input[type="button"] {
 }
 
 input[type="button"]:hover {
-    background-color: #e68a0f;
+    background-color: var(--sig-accent-hover);
 }
 
 #signature {
@@ -62,15 +85,16 @@ input[type="button"]:hover {
     width: calc(100% - 16px);
     height: 100px;
     resize: none;
-    border: 1px solid #ddd;
+    border: 1px solid var(--sig-border);
     border-radius: 8px;
-    background-color: #fff;
+    background-color: var(--sig-surface);
+    color: var(--sig-text);
 }
 
 .preview-container {
     padding: 10px;
     width: 800px;
-    background: #fff;
+    background: var(--sig-surface);
     border-radius: 12px;
     box-shadow: none;
 }
