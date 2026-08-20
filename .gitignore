@@ -1,0 +1,22 @@
+# AI-агенты: инструкции, память, конфиги — не для паблика
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+QWEN.md
+.claude/
+.codex/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurfrules
+.aider*
+.github/copilot-instructions.md
+.mcp.json
+*.local.json
+
+# Мусор ОС и редакторов
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
