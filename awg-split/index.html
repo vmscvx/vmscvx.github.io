@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="none" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AmneziaWG сплит-туннель</title>
+    <link rel="stylesheet" href="/shared.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+</head>
+
+<body>
+
+    <h1>AmneziaWG сплит-туннель</h1>
+    <p class="lead">Переписывает <code>AllowedIPs</code> в конфиге: российские и соседние адреса идут
+        напрямую, зарубежные сервисы — через VPN. Файл обрабатывается прямо в браузере, ключи никуда
+        не отправляются.</p>
+
+    <label for="files">Конфиги (.conf):</label>
+    <div class="drop" id="drop">
+        <input type="file" id="files" accept=".conf,text/plain" multiple>
+        <span id="dropText">Перетащите файлы сюда или нажмите, чтобы выбрать</span>
+    </div>
+
+    <label for="preset" style="margin-top:1.6rem;">Напрямую, мимо VPN:</label>
+    <select id="preset">
+        <option value="cis" selected>Россия и СНГ — RU, BY, KZ, AM, KG, TJ, UZ, AZ</option>
+        <option value="cis3">RU, BY, KZ</option>
+        <option value="ru">Только RU</option>
+    </select>
+
+    <label for="mode" style="margin-top:1.4rem;">В туннель:</label>
+    <select id="mode">
+        <option value="providers" selected>Только крупные провайдеры — мало маршрутов</option>
+        <option value="all">Весь зарубеж, кроме выбранных стран</option>
+    </select>
+
+    <div id="limitRow" class="hidden">
+        <label for="limit" style="margin-top:1.4rem;">Лимит маршрутов:</label>
+        <select id="limit">
+            <option value="1000">1000 — для слабых устройств</option>
+            <option value="2000" selected>2000</option>
+            <option value="4000">4000 — точнее, но тяжелее</option>
+        </select>
+    </div>
+
+    <label class="check" style="margin-top:1.4rem;">
+        <input type="checkbox" id="ipv6"> Делить IPv6 как IPv4
+        <span class="hint">без галочки весь IPv6 глушится заглушкой <code>::/1, 8000::/1</code></span>
+    </label>
+
+    <button id="run" type="button">Сгенерировать</button>
+
+    <div id="result" class="hidden">
+        <div id="summary" class="card"></div>
+        <div id="links"></div>
+    </div>
+
+    <p class="foot" id="foot"></p>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
