@@ -41,7 +41,7 @@ def routes(home, must, limit, providers_only):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    must = [n for sources in M.PROVIDERS.values() for source in sources for n in M.fetch_nets(source)]
+    must = M.fetch_providers()
     generated = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
     index = {"generated": generated, "providers": list(M.PROVIDERS), "presets": {}, "files": {}}
     for preset, countries in PRESETS.items():

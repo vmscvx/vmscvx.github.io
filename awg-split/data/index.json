@@ -1,12 +1,14 @@
 {
- "generated": "2026-09-23 12:02 UTC",
+ "generated": "2026-09-23 12:37 UTC",
  "providers": [
   "Anthropic",
   "Telegram",
   "Cloudflare",
   "Google",
   "Meta",
-  "X"
+  "X",
+  "Fastly",
+  "GitHub"
  ],
  "presets": {
   "ru": "RU",
@@ -16,144 +18,144 @@
  "files": {
   "ru-providers": {
    "v4": {
-    "routes": 109,
+    "routes": 121,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.9045
+    "foreignDirect": 0.8969
    },
    "v6": {
-    "routes": 22,
+    "routes": 25,
     "homeInVpn": 0.0,
     "foreignDirect": 0.808
    }
   },
   "ru-all-1000": {
    "v4": {
-    "routes": 709,
+    "routes": 715,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.1639
+    "foreignDirect": 0.1638
    },
    "v6": {
-    "routes": 954,
+    "routes": 956,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0012
    }
   },
   "ru-all-2000": {
    "v4": {
-    "routes": 1565,
+    "routes": 1570,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.076
+    "foreignDirect": 0.0759
    },
    "v6": {
-    "routes": 1968,
+    "routes": 1970,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0007
    }
   },
   "ru-all-4000": {
    "v4": {
-    "routes": 3178,
+    "routes": 3183,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0347
    },
    "v6": {
-    "routes": 3322,
+    "routes": 3324,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0004
    }
   },
   "cis3-providers": {
    "v4": {
-    "routes": 118,
+    "routes": 131,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.9327
+    "foreignDirect": 0.925
    },
    "v6": {
-    "routes": 22,
+    "routes": 25,
     "homeInVpn": 0.0,
     "foreignDirect": 0.8081
    }
   },
   "cis3-all-1000": {
    "v4": {
-    "routes": 761,
+    "routes": 768,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.1783
+    "foreignDirect": 0.178
    },
    "v6": {
-    "routes": 953,
+    "routes": 955,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0013
    }
   },
   "cis3-all-2000": {
    "v4": {
-    "routes": 1697,
+    "routes": 1702,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.0819
+    "foreignDirect": 0.0818
    },
    "v6": {
-    "routes": 1997,
+    "routes": 1999,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0008
    }
   },
   "cis3-all-4000": {
    "v4": {
-    "routes": 3451,
+    "routes": 3456,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0367
    },
    "v6": {
-    "routes": 3431,
+    "routes": 3433,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0004
    }
   },
   "cis-providers": {
    "v4": {
-    "routes": 118,
+    "routes": 131,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.9356
+    "foreignDirect": 0.9279
    },
    "v6": {
-    "routes": 23,
+    "routes": 26,
     "homeInVpn": 0.0,
     "foreignDirect": 0.812
    }
   },
   "cis-all-1000": {
    "v4": {
-    "routes": 785,
+    "routes": 792,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.1891
+    "foreignDirect": 0.1889
    },
    "v6": {
-    "routes": 935,
+    "routes": 937,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0014
    }
   },
   "cis-all-2000": {
    "v4": {
-    "routes": 1787,
+    "routes": 1792,
     "homeInVpn": 0.0,
-    "foreignDirect": 0.0861
+    "foreignDirect": 0.086
    },
    "v6": {
-    "routes": 935,
+    "routes": 937,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0014
    }
   },
   "cis-all-4000": {
    "v4": {
-    "routes": 3648,
+    "routes": 3653,
     "homeInVpn": 0.0,
     "foreignDirect": 0.038
    },
    "v6": {
-    "routes": 3566,
+    "routes": 3568,
     "homeInVpn": 0.0,
     "foreignDirect": 0.0005
    }

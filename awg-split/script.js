@@ -140,12 +140,15 @@ async function resolveHost(host) {
 }
 
 async function patch(conf, routes, withIpv6) {
-    if (!/^\[Peer\]/m.test(conf)) throw new Error('нет секции [Peer]');
+    // строка AllowedIPs пишется в первый [Peer], поэтому конфиг с несколькими пирами не обрабатываем
+    const peers = (conf.match(/^\[Peer\]/gm) || []).length;
+    if (peers !== 1) throw new Error('нужна ровно одна секция [Peer], найдено ' + peers);
     const endpoint = confValue(conf, 'Endpoint');
     if (!endpoint) throw new Error('нет Endpoint');
 
     let allowed = routes.v4.slice();
-    if (withIpv6) allowed = allowed.concat(routes.v6);
+    // заглушку добавляем до вырезания эндпоинта: иначе его AAAA остаётся в туннеле и тот маршрутизирует сам в себя
+    allowed = allowed.concat(withIpv6 ? routes.v6 : IPV6_STUB);
 
     const host = endpoint.replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
     for (const address of await resolveHost(host)) allowed = excludeAddress(allowed, address);
@@ -160,10 +163,8 @@ async function patch(conf, routes, withIpv6) {
         } catch (e) {
             continue;  // search domain
         }
-        if (address.bits === 128 && !withIpv6) continue;
         if (!covered(allowed, address)) allowed.push(name + (address.bits === 32 ? '/32' : '/128'));
     }
-    if (!withIpv6) allowed = allowed.concat(IPV6_STUB);
 
     const line = 'AllowedIPs = ' + allowed.join(', ');
     const cleaned = conf.replace(/^[ \t]*AllowedIPs[ \t]*=.*\r?\n?/gmi, '');

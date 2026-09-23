@@ -49,19 +49,24 @@ UNIVERSE = {4: ipaddress.ip_network("0.0.0.0/0"), 6: ipaddress.ip_network("2000:
 RESERVED6 = ["2001:db8::/32"]
 IPV6_STUB = [ipaddress.ip_network("::/1"), ipaddress.ip_network("8000::/1")]
 
-# Always through the tunnel. Sources: official lists where the provider publishes one,
-# otherwise prefixes announced by its ASN (RIPEstat). Any text/JSON with CIDRs works; plain CIDRs too.
+# Always through the tunnel. name: (minimum prefixes expected, sources...). Sources: official lists where the
+# provider publishes one, otherwise prefixes announced by its ASN (RIPEstat). Any text/JSON with CIDRs works.
+# The minimum catches a broken feed (error page, truncated answer) instead of quietly shipping short lists.
 RIPE = "https://stat.ripe.net/data/announced-prefixes/data.json?sourceapp=awg-split&resource=AS{}"
 PROVIDERS = {
-    "Anthropic": [RIPE.format(399358), "160.79.104.0/23", "2607:6bc0::/48"],
-    "Telegram": ["https://core.telegram.org/resources/cidr.txt"],
-    "Cloudflare": ["https://www.cloudflare.com/ips-v4", "https://www.cloudflare.com/ips-v6"],
-    "Google": ["https://www.gstatic.com/ipranges/goog.json"],  # YouTube, Gemini; not Google Cloud customers
-    "Meta": [RIPE.format(32934), RIPE.format(54115)],  # Facebook, Instagram, WhatsApp
-    "X": [RIPE.format(13414), RIPE.format(35995)],
-    # ChatGPT/OpenAI, Discord, Medium, Patreon, Notion sit behind Cloudflare above.
-    # More if needed: "Fastly": ["https://api.fastly.com/public-ip-list"] (Reddit, Pinterest),
-    # LinkedIn AS14413, Netflix AS2906+AS40027, Roblox AS22697+AS11281, Proton AS62371.
+    "Anthropic": (4, RIPE.format(399358), "160.79.104.0/23", "2607:6bc0::/48"),
+    "Telegram": (10, "https://core.telegram.org/resources/cidr.txt"),
+    "Cloudflare": (18, "https://www.cloudflare.com/ips-v4", "https://www.cloudflare.com/ips-v6"),
+    # goog.json is every Google range, Google Cloud customers included (cloud.json is a subset of it)
+    "Google": (100, "https://www.gstatic.com/ipranges/goog.json"),  # YouTube, Gemini, GCP
+    "Meta": (400, RIPE.format(32934), RIPE.format(54115)),  # Facebook, Instagram, WhatsApp
+    "X": (25, RIPE.format(13414), RIPE.format(35995)),
+    "Fastly": (15, "https://api.fastly.com/public-ip-list"),  # Reddit, Twitch, Spotify, PyPI, x.com statics
+    # api.github.com/meta is unusable here: its "actions" key adds 7000+ Azure prefixes
+    "GitHub": (5, "192.30.252.0/22", "185.199.108.0/22", "140.82.112.0/20", "143.55.64.0/20", "2606:50c0::/32"),
+    # ChatGPT/OpenAI, Discord, LinkedIn, Medium, Patreon, npm, Docker Hub sit behind Cloudflare above.
+    # More if needed: AWS (+153 routes, 23% of IPv4 in the tunnel: HuggingFace, Figma, Slack, Notion),
+    # Akamai AS20940 (+56), Proton AS62371 (+7), Netflix AS2906+AS40027, Roblox AS22697+AS11281.
 }
 
 # Cost of one RU address sent into the VPN, relative to one foreign address sent direct.
@@ -185,6 +190,9 @@ def selftest():
     assert any(ipaddress.ip_address("100.1.2.3") in n for n in nets)
     assert not any(ipaddress.ip_address("10.1.2.3") in n for n in nets)
     assert subtract([Net("10.0.0.0/8")], [Net("10.0.0.0/9")]) == [Net("10.128.0.0/9")]
+    # IPv6 stub keeps covering everything except the one endpoint address cut out of it
+    stub = subtract(IPV6_STUB, [ipaddress.ip_network("2a00::1/128")])
+    assert len(stub) == 128 and sum(n.num_addresses for n in stub) == 2 ** 128 - 1
     # providers mode: free gap between wanted ranges gets swallowed, RU gap does not
     must = [Net("100.0.0.0/8"), Net("103.0.0.0/8")]
     ru = [Net("99.0.0.0/8"), Net("104.0.0.0/8")]
@@ -222,21 +230,33 @@ def fetch_nets(source, min_count=1):
     return nets
 
 
+def fetch_providers():
+    """All PROVIDERS networks; raises ValueError if a source returns fewer prefixes than expected."""
+    must = []
+    for name, (minimum, *sources) in PROVIDERS.items():
+        nets = [net for source in sources for net in fetch_nets(source)]
+        if len(nets) < minimum:
+            raise ValueError(f"{name}: {len(nets)} prefixes, expected at least {minimum} - source looks broken")
+        must += nets
+    return must
+
+
 def fetch_lists(versions, countries=DEFAULT_COUNTRIES):
     """Download country lists (given IP versions) and provider lists once; shared by all configs in a batch."""
     home = []
     for code in [c.strip().upper() for c in countries.split(",") if c.strip()]:
         for version in versions:
             home += fetch_nets(COUNTRY_URL.format(code, f"ipv{version}"), 10)
-    must = [net for sources in PROVIDERS.values() for source in sources for net in fetch_nets(source)]
-    return home, must
+    return home, fetch_providers()
 
 
 def build(src, dst, lists, versions, max_routes, weight, providers_only):
     """Write dst = src config with new AllowedIPs. Returns summary; raises ValueError/OSError on failure."""
     conf = src.read_text(encoding="utf-8-sig")
-    if not re.search(r"^\[Peer\]", conf, re.M):
-        raise ValueError(f"{src.name}: no [Peer] section")
+    # one AllowedIPs line is written into the first peer, so a multi-peer config would lose the others
+    peers = len(re.findall(r"^\[Peer\]", conf, re.M))
+    if peers != 1:
+        raise ValueError(f"{src.name}: expected exactly one [Peer] section, found {peers}")
 
     # Endpoint must stay outside the tunnel, otherwise the tunnel routes into itself
     endpoint = conf_value(conf, "Endpoint")
@@ -246,8 +266,8 @@ def build(src, dst, lists, versions, max_routes, weight, providers_only):
     # every address the name resolves to: the client may pick either family
     endpoint_ips = sorted({ipaddress.ip_address(a[4][0].split("%")[0]) for a in socket.getaddrinfo(host, None)},
                           key=lambda a: (a.version, a))
-    hard = [ipaddress.ip_network(n) for n in RESERVED + RESERVED6]
-    hard += [ipaddress.ip_network(ip) for ip in endpoint_ips]
+    endpoint_nets = [ipaddress.ip_network(ip) for ip in endpoint_ips]
+    hard = [ipaddress.ip_network(n) for n in RESERVED + RESERVED6] + endpoint_nets
 
     # DNS from [Interface] goes through the tunnel even if it sits in a private range
     dns = []
@@ -272,8 +292,10 @@ def build(src, dst, lists, versions, max_routes, weight, providers_only):
         other = f"other foreign->VPN {1 - foreign_direct:.2%}" if providers_only else f"foreign->direct {foreign_direct:.2%}"
         stats.append(f"IPv{version}: {len(nets)} routes, home->VPN {home_in_vpn:.1%}, {other}")
     if 6 not in versions:
-        allowed += IPV6_STUB
-        stats.append("IPv6: stub")
+        # the endpoint AAAA must stay out of the stub too, or the tunnel routes its own handshake
+        stub = subtract(IPV6_STUB, [n for n in endpoint_nets if n.version == 6])
+        allowed += stub
+        stats.append(f"IPv6: stub, {len(stub)} routes")
 
     line = "AllowedIPs = " + ", ".join(map(str, allowed))
     conf = re.sub(r"^[ \t]*AllowedIPs[ \t]*=.*\n?", "", conf, flags=re.M | re.I)

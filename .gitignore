@@ -20,3 +20,4 @@ QWEN.md
 Thumbs.db
 .vscode/
 .idea/
+__pycache__/
